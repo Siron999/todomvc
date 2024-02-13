@@ -1,0 +1,9 @@
+<div>
+    <form method="POST" action="">
+        {% csrf_token %}
+        Are you sure you want to delete {{todo.title}} ?
+    </br>
+        <input type="submit" value="Confirm"/></br>
+        <a href="{{request.META.HTTP_REFERER}}">Go Back</a>
+    </form>
+</div>

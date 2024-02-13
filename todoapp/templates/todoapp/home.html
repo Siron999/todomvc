@@ -1,0 +1,11 @@
+{% extends "todoapp/layout/layout.html" %}
+{% block content %}
+<a href="{% url 'add-todo'%}">Add Todo</a>
+<h1>Todos : </h1>
+{% for todo in todos%}
+<h4>
+    {{forloop.counter}}. <a href="{% url 'todo' todo.todo_id %}">{{todo.title}}, {{todo.created_at}} </a> <a href="{% url 'update-todo' todo.todo_id%}">  Edit</a> 
+    <a href="{% url 'delete-todo' todo.todo_id%}">  Delete</a> 
+</h4>
+{% endfor %}
+{% endblock content %} 
