@@ -1,0 +1,21 @@
+{% extends 'todoApp/layout/layout.html'%}
+{% block content %}
+
+<div>
+    <form method="POST" action="">
+        {% csrf_token %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li style="color:red">{{message}}</li>
+            {% endfor %}
+        </ul>
+        {% endif%}
+        <input type="text" name="username"/>
+        <input type="password" name="password"/>
+        <input type="submit" value="Login"/>
+    </form>
+</div>
+
+{% endblock content%}
+

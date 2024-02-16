@@ -1,5 +1,8 @@
 {% extends "todoapp/layout/layout.html" %}
 {% block content %}
+{% if request.user.is_authenticated %}
+<h4>Hi, {{request.user.username}}</h4>
+{% endif %}
 <a href="{% url 'add-todo'%}">Add Todo</a>
 <h1>Todos : </h1>
 {% for todo in todos%}

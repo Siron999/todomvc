@@ -1,2 +1,10 @@
 <h1>Navbar Section</h1>
+<div>
+    {% if request.user.is_authenticated %}
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <input type="submit" value="Logout"/>
+    </form>
+    {% endif %}
+</div>
 </br>
