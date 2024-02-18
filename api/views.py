@@ -1,10 +1,13 @@
-from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
-from .models import Message
-from .serializers.serializers import MessageSerializer
+
+from api.exceptions import BadRequestException
+from .models import Message, Category
+from .serializers.serializers import CategorySerializer, MessageDetailSerializer, MessageSerializer
 from .serializers.user_serializer import UserSerializer
 
 
@@ -33,19 +36,60 @@ class MessageView(APIView):
 
     def post(self, request):
         message = MessageSerializer(data=request.data)
-        user = User.objects.get(id=request.data.get("user"))
-        print(message.is_valid())
+        message_detail = MessageDetailSerializer(
+            data=request.data.get("message_detail"))
 
-        if message.is_valid():
-            message.save(user=user)
+        try:
+            user = User.objects.get(id=request.data.get("user_id"))
+        except ObjectDoesNotExist as e:
+            raise ObjectDoesNotExist("User Not Found")
 
-        return Response("Message saved", 201)
+        if message_detail.is_valid():
+            saved_message_detail = message_detail.save()
+            if message.is_valid():
+                message.save(user=user, message_detail=saved_message_detail)
+                return Response("Message saved", 201)
+
+        raise BadRequestException()
 
 
 class UserView(APIView):
     def get(self, request, pk=None):
         if pk is not None:
             user = User.objects.get(id=pk)
-            messages = Message.objects.filter(user=user)
             user_serializer = UserSerializer(user)
+
             return Response(user_serializer.data, 200)
+        raise BadRequestException()
+
+
+class CategoryView(APIView):
+
+    def get(self, request):
+        category = Category.objects.all()
+        return Response(CategorySerializer(category, many=True).data, 200)
+
+    def post(self, request):
+        category = CategorySerializer(data=request.data)
+        if category.is_valid():
+            category.save()
+            return Response("Category saved", 201)
+
+        raise BadRequestException()
+
+
+@api_view(['GET'])
+def add_category(request, message_id, category_id):
+    try:
+        category = Category.objects.get(category_id=category_id)
+    except ObjectDoesNotExist as e:
+        raise ObjectDoesNotExist("Category not found")
+
+    try:
+        message = Message.objects.get(message_id=message_id)
+    except ObjectDoesNotExist as e:
+        raise ObjectDoesNotExist("Message not found")
+
+    message.category.add(category)
+
+    return Response("Category addded to message")
