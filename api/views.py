@@ -1,9 +1,11 @@
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Message
-from .serializers import MessageSerializer
+from .serializers.serializers import MessageSerializer
+from .serializers.user_serializer import UserSerializer
 
 
 class MessageView(APIView):
@@ -16,7 +18,7 @@ class MessageView(APIView):
     #     test = {"name": "Siron Shakya", "address": "Jawalakhel"}
     #     list_example = ['hello', '2']
     #     response = Response(list_example, 200)
-    #     response.set_cookie("token", "randomtest",
+    #     response.set_cookie("token", "randomtest2",
     #                         max_age=3600, secure=True, httponly=False)
     #     return response
 
@@ -31,6 +33,19 @@ class MessageView(APIView):
 
     def post(self, request):
         message = MessageSerializer(data=request.data)
+        user = User.objects.get(id=request.data.get("user"))
+        print(message.is_valid())
+
         if message.is_valid():
-            message.save()
-        return Response("Message saved")
+            message.save(user=user)
+
+        return Response("Message saved", 201)
+
+
+class UserView(APIView):
+    def get(self, request, pk=None):
+        if pk is not None:
+            user = User.objects.get(id=pk)
+            messages = Message.objects.filter(user=user)
+            user_serializer = UserSerializer(user)
+            return Response(user_serializer.data, 200)
