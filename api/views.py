@@ -1,10 +1,13 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import permission_classes, api_view, authentication_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from api.authentication import IsCustomAdminUser, JWTAuthentication
 from api.exceptions import BadRequestException
 from .models import Message, Category
 from .serializers.serializers import CategorySerializer, MessageDetailSerializer, MessageSerializer
@@ -12,18 +15,6 @@ from .serializers.user_serializer import UserSerializer
 
 
 class MessageView(APIView):
-
-    # def get(self, request):
-    #     print(request.COOKIES)
-    #     test1 = request.COOKIES.get("test")
-    #     test2 = request.COOKIES.get("test2")
-    #     print(test1, test2)
-    #     test = {"name": "Siron Shakya", "address": "Jawalakhel"}
-    #     list_example = ['hello', '2']
-    #     response = Response(list_example, 200)
-    #     response.set_cookie("token", "randomtest2",
-    #                         max_age=3600, secure=True, httponly=False)
-    #     return response
 
     def get(self, request, pk=None):
         if pk is None:
@@ -78,18 +69,41 @@ class CategoryView(APIView):
         raise BadRequestException()
 
 
-@api_view(['GET'])
-def add_category(request, message_id, category_id):
-    try:
-        category = Category.objects.get(category_id=category_id)
-    except ObjectDoesNotExist as e:
-        raise ObjectDoesNotExist("Category not found")
+class AddCategoryView:
 
-    try:
-        message = Message.objects.get(message_id=message_id)
-    except ObjectDoesNotExist as e:
-        raise ObjectDoesNotExist("Message not found")
+    @api_view(['GET'])
+    @permission_classes([IsCustomAdminUser])
+    @staticmethod
+    def add_category(request, message_id, category_id):
+        try:
+            category = Category.objects.get(category_id=category_id)
+        except ObjectDoesNotExist as e:
+            raise ObjectDoesNotExist("Category not found")
 
-    message.category.add(category)
+        try:
+            message = Message.objects.get(message_id=message_id)
+        except ObjectDoesNotExist as e:
+            raise ObjectDoesNotExist("Message not found")
 
-    return Response("Category addded to message")
+        message.category.add(category)
+
+        return Response("Category addded to message")
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def login_action(request):
+    if request.method == 'POST':
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        user = User.objects.filter(username=username).first()
+
+        if user is None or not user.check_password(password):
+            raise AuthenticationFailed("Invalid Credentials")
+
+        # Generate the JWT token
+        jwt_token = JWTAuthentication.create_jwt(user)
+
+        return Response({'access_token': jwt_token}, 200)

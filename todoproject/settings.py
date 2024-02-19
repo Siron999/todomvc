@@ -22,6 +22,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-*eufx0ac1^v=1s!u&(%5z51!v)@wykz963-2^p5uopsoz@w0$4"
 
+JWT_CONF = {
+    'TOKEN_LIFETIME_HOURS': 24
+}
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -29,6 +34,12 @@ ALLOWED_HOSTS = []
 
 REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'api.exceptions.custom_exception_handler',
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'api.authentication.JWTAuthentication'
+    ]
 }
 
 
