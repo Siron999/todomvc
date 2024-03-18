@@ -21,6 +21,8 @@ class MessageDetailSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     message_detail = MessageDetailSerializer(
         many=False, required=False)
+    category = CategorySerializer(
+        many=True, required=False)
 
     class Meta:
         model = Message

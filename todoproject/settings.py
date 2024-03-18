@@ -46,6 +46,7 @@ REST_FRAMEWORK = {
 # Application definition
 
 INSTALLED_APPS = [
+    "channels",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -73,6 +74,11 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost',
+]
+
 ROOT_URLCONF = "todoproject.urls"
 
 TEMPLATES = [
@@ -93,7 +99,14 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "todoproject.wsgi.application"
+ASGI_APPLICATION = "todoproject.asgi.application"
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 
 # Database

@@ -105,5 +105,8 @@ def login_action(request):
 
         # Generate the JWT token
         jwt_token = JWTAuthentication.create_jwt(user)
+        response = Response("Login Sucessful", 200)
+        response.set_cookie('access_token', jwt_token,
+                            domain='localhost', secure=True, samesite=None, max_age=860000, httponly=True)
 
-        return Response({'access_token': jwt_token}, 200)
+        return response
